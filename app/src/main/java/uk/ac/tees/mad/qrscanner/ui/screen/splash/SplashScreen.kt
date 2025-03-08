@@ -19,11 +19,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import uk.ac.tees.mad.qrscanner.R
+import uk.ac.tees.mad.qrscanner.navigation.Routes
 
 @Composable
-fun SplashScreen() {
+fun SplashScreen(navController: NavController) {
     val scale = remember { Animatable(0.8f) }
     val alpha = remember { Animatable(0f) }
 
@@ -32,6 +34,11 @@ fun SplashScreen() {
         alpha.animateTo(1f, animationSpec = tween(1000))
         delay(2000)
         alpha.animateTo(0f, animationSpec = tween(500))
+        navController.navigate(Routes.MAIN_SCREEN){
+            popUpTo(Routes.SPLASH_SCREEN){
+                inclusive = true
+            }
+        }
     }
 
     Box(

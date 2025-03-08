@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            QRScannerTheme {
+            QRScannerTheme(true) {
                 AppNavigation()
             }
         }
