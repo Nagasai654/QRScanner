@@ -26,33 +26,40 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import uk.ac.tees.mad.qrscanner.ui.theme.MyColors
+import uk.ac.tees.mad.qrscanner.viewmodel.ScannerViewModel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Composable
-fun ScannerScreen(modifier: Modifier = Modifier) {
+fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     val executor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
     val lifecycleOwner = LocalContext.current as LifecycleOwner
     var previewView = remember { PreviewView(context) }
     var hasCameraPermission by remember { mutableStateOf(false) }
+    val scannedText by viewModel.scannedText.collectAsState()
 
+    val scannerBoxRect = rememberScannerBoxRect()
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -77,8 +84,7 @@ fun ScannerScreen(modifier: Modifier = Modifier) {
                 .build()
                 .also {
                     it.setAnalyzer(executor) { image ->
-                        // Process QR Code here
-                        image.close()
+                        viewModel.scanQRCode(image, scannerBoxRect)
                     }
                 }
 
@@ -118,6 +124,15 @@ fun ScannerScreen(modifier: Modifier = Modifier) {
                         strokeWidth = 4f
                     )
                 }
+
+                // Scanning Text
+                Text(
+                    text = if (scannedText.isNotEmpty()) "QR Code: $scannedText" else "Align QR Code in the frame",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MyColors.themeColor,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)
+                )
             }
         }
     } else {
@@ -125,4 +140,21 @@ fun ScannerScreen(modifier: Modifier = Modifier) {
             Text("Camera permission is required to scan QR codes", fontSize = 18.sp, color = Color.White)
         }
     }
+}
+
+@Composable
+fun rememberScannerBoxRect(): Rect {
+    val density = LocalDensity.current
+    val context = LocalContext.current
+    val screenWidth = context.resources.displayMetrics.widthPixels.toFloat()
+    val screenHeight = context.resources.displayMetrics.heightPixels.toFloat()
+
+    val scannerBoxSize = with(density) { 250.dp.toPx() }
+
+    return Rect(
+        (screenWidth - scannerBoxSize) / 2,
+        (screenHeight - scannerBoxSize) / 2,
+        (screenWidth + scannerBoxSize) / 2,
+        (screenHeight - scannerBoxSize) / 2 + scannerBoxSize
+    )
 }
