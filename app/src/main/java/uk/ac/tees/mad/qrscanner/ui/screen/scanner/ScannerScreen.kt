@@ -44,6 +44,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
+import uk.ac.tees.mad.qrscanner.ui.components.ScannerResultDialog
 import uk.ac.tees.mad.qrscanner.ui.theme.MyColors
 import uk.ac.tees.mad.qrscanner.viewmodel.ScannerViewModel
 import java.util.concurrent.ExecutorService
@@ -58,6 +59,8 @@ fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = h
     var previewView = remember { PreviewView(context) }
     var hasCameraPermission by remember { mutableStateOf(false) }
     val scannedText by viewModel.scannedText.collectAsState()
+    val isScanning by viewModel.isScanning.collectAsState()
+    val showResult = remember { mutableStateOf(false) }
 
     val scannerBoxRect = rememberScannerBoxRect()
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -83,8 +86,12 @@ fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = h
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(executor) { image ->
-                        viewModel.scanQRCode(image, scannerBoxRect)
+                    it.setAnalyzer(executor) { imageProxy ->
+                        if (isScanning) {
+                            viewModel.scanQRCode(imageProxy, scannerBoxRect){showResult.value = true}
+                        } else {
+                            imageProxy.close()
+                        }
                     }
                 }
 
@@ -124,20 +131,22 @@ fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = h
                         strokeWidth = 4f
                     )
                 }
-
-                // Scanning Text
-                Text(
-                    text = if (scannedText.isNotEmpty()) "QR Code: $scannedText" else "Align QR Code in the frame",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MyColors.themeColor,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)
-                )
             }
         }
     } else {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Camera permission is required to scan QR codes", fontSize = 18.sp, color = Color.White)
+        }
+    }
+
+    if (showResult.value){
+        ScannerResultDialog(
+            scannedText,
+            {showResult.value = false
+                viewModel.resetScanning()}
+        ) {
+            showResult.value = false
+            viewModel.resetScanning()
         }
     }
 }

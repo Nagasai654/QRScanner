@@ -23,10 +23,17 @@ class ScannerViewModel @Inject constructor(): ViewModel() {
     private val _scannedText = MutableStateFlow("")
     val scannedText: StateFlow<String> = _scannedText
 
+    private val _isScanning = MutableStateFlow(true)
+    val isScanning: StateFlow<Boolean> = _isScanning
+
     private val scanner: BarcodeScanner = BarcodeScanning.getClient()
 
     @OptIn(ExperimentalGetImage::class)
-    fun scanQRCode(imageProxy: ImageProxy, scannerBox: Rect) {
+    fun scanQRCode(imageProxy: ImageProxy, scannerBox: Rect, onResult:()-> Unit) {
+        if (!_isScanning.value) {
+            imageProxy.close()
+            return
+        }
         val mediaImage: Image? = imageProxy.image
         if (mediaImage != null) {
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
@@ -42,6 +49,8 @@ class ScannerViewModel @Inject constructor(): ViewModel() {
                                 val qrText = barcode.rawValue
                                 viewModelScope.launch {
                                     _scannedText.emit(qrText ?: "")
+                                    _isScanning.emit(false)
+                                    onResult()
                                 }
                             }
                         }
@@ -50,6 +59,12 @@ class ScannerViewModel @Inject constructor(): ViewModel() {
                 .addOnCompleteListener {
                     imageProxy.close()
                 }
+        }
+    }
+
+    fun resetScanning() {
+        viewModelScope.launch {
+            _isScanning.emit(true)
         }
     }
 
