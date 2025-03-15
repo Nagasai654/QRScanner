@@ -88,7 +88,7 @@ fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = h
                 .also {
                     it.setAnalyzer(executor) { imageProxy ->
                         if (isScanning) {
-                            viewModel.scanQRCode(imageProxy, scannerBoxRect){showResult.value = true}
+                            viewModel.scanQRCode(imageProxy, scannerBoxRect, context){showResult.value = true}
                         } else {
                             imageProxy.close()
                         }

@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.qrscanner.viewmodel
 
+import android.content.Context
 import android.media.Image
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -15,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import uk.ac.tees.mad.qrscanner.helper.NotificationHelper
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +31,7 @@ class ScannerViewModel @Inject constructor(): ViewModel() {
     private val scanner: BarcodeScanner = BarcodeScanning.getClient()
 
     @OptIn(ExperimentalGetImage::class)
-    fun scanQRCode(imageProxy: ImageProxy, scannerBox: Rect, onResult:()-> Unit) {
+    fun scanQRCode(imageProxy: ImageProxy, scannerBox: Rect, context: Context,onResult:()-> Unit) {
         if (!_isScanning.value) {
             imageProxy.close()
             return
@@ -50,6 +52,11 @@ class ScannerViewModel @Inject constructor(): ViewModel() {
                                 viewModelScope.launch {
                                     _scannedText.emit(qrText ?: "")
                                     _isScanning.emit(false)
+                                    NotificationHelper.showNotification(
+                                        context,
+                                        "Scanner Result",
+                                        _scannedText.value
+                                    )
                                     onResult()
                                 }
                             }
