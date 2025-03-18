@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import uk.ac.tees.mad.qrscanner.ui.components.MainBottomNavigation
 import uk.ac.tees.mad.qrscanner.ui.screen.history.HistoryScreen
 import uk.ac.tees.mad.qrscanner.ui.screen.profile.ProfileScreen
@@ -20,7 +21,7 @@ import uk.ac.tees.mad.qrscanner.ui.screen.scanner.ScannerScreen
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavController) {
     val selectedScreen = remember { mutableIntStateOf(0) }
     val requestPermissionLauncher =
         rememberLauncherForActivityResult(
@@ -47,7 +48,7 @@ fun MainScreen() {
         val modifier = Modifier.padding(paddingValues)
         when(selectedScreen.intValue){
             0 -> ScannerScreen(modifier)
-            1 -> HistoryScreen(modifier)
+            1 -> HistoryScreen(modifier, navController)
             2 -> ProfileScreen(modifier)
         }
     }
