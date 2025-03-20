@@ -23,7 +23,7 @@ fun AppNavigation() {
         }
 
         composable(Routes.AUTH_SCREEN) {
-            AuthScreen()
+            AuthScreen(navController)
         }
     }
 }

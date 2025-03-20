@@ -1,10 +1,6 @@
 package uk.ac.tees.mad.qrscanner.ui.screen.auth
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,13 +50,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import uk.ac.tees.mad.qrscanner.R
 import uk.ac.tees.mad.qrscanner.ui.theme.MyColors
+import uk.ac.tees.mad.qrscanner.viewmodel.AuthViewModel
 
 @Composable
-fun AuthScreen() {
+fun AuthScreen(navController: NavController,viewModel: AuthViewModel = hiltViewModel()) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Login", "Sign Up")
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -125,13 +126,21 @@ fun AuthScreen() {
                     AnimatedVisibility(
                         visible = selectedTabIndex == 0,
                     ) {
-                        LoginForm()
+                        LoginForm { email, password->
+                            viewModel.loginUser(email,password,context) {
+                                navController.popBackStack()
+                            }
+                        }
                     }
 
                     AnimatedVisibility(
                         visible = selectedTabIndex == 1,
                     ) {
-                        SignUpForm()
+                        SignUpForm{name, email, p1, p2->
+                            viewModel.createUser(name,email,p1,p2,context) {
+                                navController.popBackStack()
+                            }
+                        }
                     }
                 }
             }
@@ -140,7 +149,7 @@ fun AuthScreen() {
 }
 
 @Composable
-fun LoginForm() {
+fun LoginForm(onClick:(String, String)-> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -213,7 +222,7 @@ fun LoginForm() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { /* Handle login */ },
+            onClick = { onClick(email, password) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -232,7 +241,7 @@ fun LoginForm() {
 }
 
 @Composable
-fun SignUpForm() {
+fun SignUpForm(onClick: (String,String, String, String) -> Unit) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -358,7 +367,7 @@ fun SignUpForm() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { /* Handle sign up */ },
+            onClick = { onClick(name,email, password, confirmPassword) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
