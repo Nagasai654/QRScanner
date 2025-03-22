@@ -9,6 +9,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
@@ -16,11 +18,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import uk.ac.tees.mad.qrscanner.data.model.ScanHistory
+import uk.ac.tees.mad.qrscanner.data.repository.Repository
 import uk.ac.tees.mad.qrscanner.helper.NotificationHelper
 import javax.inject.Inject
 
 @HiltViewModel
-class ScannerViewModel @Inject constructor(): ViewModel() {
+class ScannerViewModel @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val db: FirebaseFirestore,
+    private val repository: Repository
+): ViewModel() {
 
     private val _scannedText = MutableStateFlow("")
     val scannedText: StateFlow<String> = _scannedText
@@ -57,6 +65,7 @@ class ScannerViewModel @Inject constructor(): ViewModel() {
                                         "Scanner Result",
                                         _scannedText.value
                                     )
+                                    saveHistory(_scannedText.value)
                                     onResult()
                                 }
                             }
@@ -72,6 +81,19 @@ class ScannerViewModel @Inject constructor(): ViewModel() {
     fun resetScanning() {
         viewModelScope.launch {
             _isScanning.emit(true)
+        }
+    }
+
+    fun saveHistory(data: String){
+        val user = auth.currentUser
+        if (user!=null){
+            val entity = ScanHistory(
+                userId = user.uid,
+                data = data,
+            )
+            viewModelScope.launch {
+                repository.addHistory(entity)
+            }
         }
     }
 
