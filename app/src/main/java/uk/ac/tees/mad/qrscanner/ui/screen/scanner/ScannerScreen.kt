@@ -143,6 +143,7 @@ fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = h
             {showResult.value = false
                 viewModel.resetScanning()}
         ) {
+            viewModel.saveFavorite(context)
             showResult.value = false
             viewModel.resetScanning()
         }

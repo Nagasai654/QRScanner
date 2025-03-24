@@ -2,6 +2,7 @@ package uk.ac.tees.mad.qrscanner.viewmodel
 
 import android.content.Context
 import android.media.Image
+import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
@@ -18,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import uk.ac.tees.mad.qrscanner.data.model.ScanFavorite
 import uk.ac.tees.mad.qrscanner.data.model.ScanHistory
 import uk.ac.tees.mad.qrscanner.data.repository.Repository
 import uk.ac.tees.mad.qrscanner.helper.NotificationHelper
@@ -94,6 +96,33 @@ class ScannerViewModel @Inject constructor(
             viewModelScope.launch {
                 repository.addHistory(entity)
             }
+        }
+    }
+
+    fun saveFavorite(context: Context){
+        val user = auth.currentUser
+        if (user!=null){
+            val entity = ScanFavorite(
+                userId = user.uid,
+                data = _scannedText.value
+            )
+            db.collection("USERS")
+                .document(user.uid)
+                .collection("FAVORITE")
+                .add(entity)
+                .addOnSuccessListener { document->
+                    document.update("id",document.id)
+                    viewModelScope.launch {
+                        repository.addFavorite(entity.copy(id = document.id))
+                        Toast.makeText(context,"Saved to favorite", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context,"Failed to save, please check network", Toast.LENGTH_SHORT).show()
+                }
+        }
+        else{
+            Toast.makeText(context, "Login before saving to favorite", Toast.LENGTH_SHORT).show()
         }
     }
 
