@@ -22,10 +22,13 @@ interface ScannerDao {
     fun getHistory(userId: String): Flow<List<ScanHistory>>
 
     @Query("SELECT * FROM favorite_data WHERE userId =:userId")
-    fun getFavorite(userId: String): Flow<List<ScanHistory>>
+    fun getFavorite(userId: String): Flow<List<ScanFavorite>>
 
     @Query("DELETE FROM history_data WHERE userId =:userId")
     suspend fun deleteHistory(userId: String)
+
+    @Delete
+    suspend fun deleteOneHistory(entity: ScanHistory)
 
     @Delete
     suspend fun deleteFavorite(entity: ScanFavorite)

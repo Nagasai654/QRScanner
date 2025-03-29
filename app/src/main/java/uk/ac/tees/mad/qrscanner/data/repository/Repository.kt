@@ -8,7 +8,8 @@ interface Repository {
     suspend fun addHistory(entity:ScanHistory)
     suspend fun addFavorite(entity: ScanFavorite)
     fun getHistory(userId: String): Flow<List<ScanHistory>>
-    fun getFavorite(userId: String): Flow<List<ScanHistory>>
+    fun getFavorite(userId: String): Flow<List<ScanFavorite>>
     suspend fun deleteHistory(userId: String)
+    suspend fun deleteOneHistory(entity: ScanHistory)
     suspend fun deleteFavorite(entity: ScanFavorite)
 }

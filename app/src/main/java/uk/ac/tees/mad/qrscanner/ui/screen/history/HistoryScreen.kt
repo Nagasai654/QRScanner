@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -21,7 +22,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
@@ -43,25 +46,44 @@ fun HistoryScreen(
     val user = FirebaseAuth.getInstance().currentUser
     val selectedTab = remember { mutableIntStateOf(0) }
     val history by viewModel.history.collectAsState()
+    val favorite by viewModel.favorite.collectAsState()
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxSize()
     ) {
-        if (user==null){
-            Button({
-                navController.navigate(Routes.AUTH_SCREEN)
-            }) {
-                Text("Login")
+        if (user == null) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    "To save history and favorite, you have login!",
+                    fontSize = 22.sp, fontWeight = FontWeight.Bold
+                )
+                Button(
+                    onClick = {
+                        navController.navigate(Routes.AUTH_SCREEN)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MyColors.themeColor
+                    ),
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text("Login")
+                }
             }
-        }
-        else {
+        } else {
             Column(modifier = Modifier.fillMaxSize()) {
                 SingleChoiceSegmentedButtonRow(
                     space = 16.dp,
-                    modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
                     SegmentedButton(
-                        onClick = {selectedTab.intValue = 0},
-                        selected = selectedTab.intValue==0,
+                        onClick = { selectedTab.intValue = 0 },
+                        selected = selectedTab.intValue == 0,
                         shape = RoundedCornerShape(12.dp),
                         colors = SegmentedButtonDefaults.colors(
                             activeContainerColor = MyColors.themeColor
@@ -70,8 +92,8 @@ fun HistoryScreen(
                         Text("History")
                     }
                     SegmentedButton(
-                        onClick = {selectedTab.intValue = 1},
-                        selected = selectedTab.intValue==1,
+                        onClick = { selectedTab.intValue = 1 },
+                        selected = selectedTab.intValue == 1,
                         shape = RoundedCornerShape(12.dp),
                         colors = SegmentedButtonDefaults.colors(
                             activeContainerColor = MyColors.themeColor
@@ -83,11 +105,25 @@ fun HistoryScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(history) { item->
-                        HistoryItem(
-                            item.data,
-                            formatTimestamp(item.time)
-                        ) { }
+                    if (selectedTab.intValue==0){
+                        items(history) { item ->
+                            HistoryItem(
+                                item.data,
+                                formatTimestamp(item.time)
+                            ) {
+                                viewModel.deleteHistory(item)
+                            }
+                        }
+                    }
+                    else{
+                        items(favorite) { item ->
+                            HistoryItem(
+                                item.data,
+                                formatTimestamp(item.time)
+                            ) {
+                                viewModel.deleteFavorite(item)
+                            }
+                        }
                     }
                 }
             }

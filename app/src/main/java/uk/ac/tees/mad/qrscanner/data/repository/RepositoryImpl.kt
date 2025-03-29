@@ -21,12 +21,16 @@ class RepositoryImpl @Inject constructor(
         return dao.getHistory(userId)
     }
 
-    override fun getFavorite(userId: String): Flow<List<ScanHistory>> {
+    override fun getFavorite(userId: String): Flow<List<ScanFavorite>> {
         return dao.getFavorite(userId)
     }
 
     override suspend fun deleteHistory(userId: String) {
         dao.deleteHistory(userId)
+    }
+
+    override suspend fun deleteOneHistory(entity: ScanHistory) {
+        dao.deleteOneHistory(entity)
     }
 
     override suspend fun deleteFavorite(entity: ScanFavorite) {
