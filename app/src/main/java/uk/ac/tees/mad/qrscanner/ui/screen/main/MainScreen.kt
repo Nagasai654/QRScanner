@@ -49,7 +49,7 @@ fun MainScreen(navController: NavController) {
         when(selectedScreen.intValue){
             0 -> ScannerScreen(modifier)
             1 -> HistoryScreen(modifier, navController)
-            2 -> ProfileScreen(modifier)
+            2 -> ProfileScreen(modifier, navController)
         }
     }
 }

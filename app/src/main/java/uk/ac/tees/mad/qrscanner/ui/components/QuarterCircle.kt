@@ -11,7 +11,7 @@ import uk.ac.tees.mad.qrscanner.ui.theme.MyColors
 fun QuarterCircle() {
     Canvas(modifier = Modifier.fillMaxSize()) {
         translate(left = 450f,top = -1000f) {
-            drawCircle(MyColors.themeColor, radius = 1000f)
+            drawCircle(MyColors.themeColor.copy(0.8f), radius = 1000f)
         }
     }
 }

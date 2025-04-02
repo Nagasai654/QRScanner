@@ -23,7 +23,7 @@ fun ProfileButton(
     onClick:()-> Unit
 ) {
     Card(
-        onClick = {},
+        onClick = {onClick()},
         colors = CardDefaults.cardColors(
             containerColor = MyColors.themeColor.copy(0.5f)
         ),
