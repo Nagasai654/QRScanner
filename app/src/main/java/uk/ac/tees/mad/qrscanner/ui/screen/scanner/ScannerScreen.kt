@@ -1,10 +1,11 @@
 package uk.ac.tees.mad.qrscanner.ui.screen.scanner
 
 import android.Manifest
-import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -39,7 +40,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import uk.ac.tees.mad.qrscanner.ui.components.ScannerResultDialog
@@ -48,6 +48,7 @@ import uk.ac.tees.mad.qrscanner.viewmodel.ScannerViewModel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = hiltViewModel()) {
     val context = LocalContext.current
@@ -61,18 +62,24 @@ fun ScannerScreen(modifier: Modifier = Modifier, viewModel: ScannerViewModel = h
     val showResult = remember { mutableStateOf(false) }
 
     val scannerBoxRect = rememberScannerBoxRect()
-    val requestPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        hasCameraPermission = isGranted
-    }
+    val requestPermissionsLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            val cameraGranted = permissions[Manifest.permission.CAMERA] == true
+
+            if (cameraGranted) {
+                hasCameraPermission = true
+            }
+        }
 
     LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            hasCameraPermission = true
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
+        requestPermissionsLauncher.launch(
+            arrayOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        )
     }
 
     if (hasCameraPermission) {

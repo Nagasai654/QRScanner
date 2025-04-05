@@ -25,12 +25,8 @@ class HistoryViewModel @Inject constructor(
     val history: StateFlow<List<ScanHistory>> get() = _history
     private val _favorite = MutableStateFlow(emptyList<ScanFavorite>())
     val favorite: StateFlow<List<ScanFavorite>> get() = _favorite
-    init {
-        syncData()
-        fetchData()
-    }
 
-    private fun fetchData(){
+    fun fetchData(){
         val user = auth.currentUser
         if (user!=null){
             viewModelScope.launch {
@@ -66,7 +62,7 @@ class HistoryViewModel @Inject constructor(
         }
     }
 
-    private fun syncData(){
+    fun syncData(){
         val user = auth.currentUser
         if (user!=null){
             viewModelScope.launch {

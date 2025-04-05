@@ -16,6 +16,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -47,6 +48,11 @@ fun HistoryScreen(
     val selectedTab = remember { mutableIntStateOf(0) }
     val history by viewModel.history.collectAsState()
     val favorite by viewModel.favorite.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.syncData()
+        viewModel.fetchData()
+    }
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxSize()

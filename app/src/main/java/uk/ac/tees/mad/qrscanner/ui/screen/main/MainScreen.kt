@@ -23,20 +23,7 @@ import uk.ac.tees.mad.qrscanner.ui.screen.scanner.ScannerScreen
 @Composable
 fun MainScreen(navController: NavController) {
     val selectedScreen = remember { mutableIntStateOf(0) }
-    val requestPermissionLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            if (isGranted) {
-                Log.d("Permission", "Notification permission granted")
-            } else {
-                Log.e("Permission", "Notification permission denied")
-            }
-        }
 
-    LaunchedEffect(Unit) {
-        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-    }
     Scaffold(
         bottomBar = {
             MainBottomNavigation(
